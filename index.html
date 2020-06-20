@@ -1,0 +1,57 @@
+<html>
+<head>
+	<title>SOCKET IO TEST</title>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.4.5/socket.io.min.js"></script>
+	<style>
+		.container{
+			width: 320px;
+  			padding: 10px;
+  			border: 5px solid gray;
+  			margin: auto;		
+		}		
+	</style>
+</head>
+
+<body body>
+<div class="container">
+	<form class="form">
+		<input id="message">
+		<button id="send">Send</button>
+	</form>
+	<ul>
+	 	
+	</ul>
+</div>
+</body>
+<script>
+	let socket = io('http://localhost:3000/notify');
+
+	socket.on('recieve', (data) => {
+		console.log(data);
+		let node = document.createElement('li');		
+  		let textnode = document.createTextNode(data.message);
+  		node.appendChild(textnode);
+  		document.querySelector('ul').appendChild(node);
+		notifyMe(data);
+	})
+
+	document.querySelector('form').addEventListener('submit', (evt) =>{
+		evt.preventDefault();
+		let message = document.querySelector('#message');
+		console.log(message.value);
+		socket.emit('sendnotification', {title:'Notify', message: message.value})
+		message.value=''
+	})
+
+	const notifyMe = (data) => {
+		navigator.serviceWorker.register("sw.js");
+		Notification.requestPermission((result) => {
+			if(result === 'granted') {
+				navigator.serviceWorker.ready.then((registration) => {
+					registration.showNotification(data.message);
+				})
+			}
+		})
+	}
+</script>
+</html>
